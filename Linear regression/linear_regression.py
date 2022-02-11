@@ -2,11 +2,11 @@ import numpy as np
 
 
 class LinearRegression:
-    def __init__(self, learning_rate=0.001, max_iters=1000):
-        self.best_params = None
+    def __init__(self, learning_rate=0.01, max_iters=1000, random_state=None):
+        self.params = None
         self.learning_rate = learning_rate
-        self.loss = None
         self.max_iters = max_iters
+        self.random_state = random_state
 
 
     def compute_loss(self, X, y, w, b):
@@ -16,8 +16,9 @@ class LinearRegression:
         return Ls
 
     def init_params(self, n_features):
-        w_0 = np.zeros(n_features)
-        b_0 = 0
+        np.random.seed(self.random_state)
+        w_0 = np.random.rand(n_features)
+        b_0 = np.random.rand()
         return w_0, b_0
 
     def fit(self, X, y):
@@ -33,15 +34,32 @@ class LinearRegression:
             b = b - self.learning_rate * db
             loss = self.compute_loss(X, y, w, b)
             losses.append(loss)
-        self.best_params = {
+        self.params = {
             'w': w,
             'b': b
         }
-        self.loss = loss
         return losses
 
+    def get_params(self):
+        return self.params
+
+    def set_params(self, **params):
+        w = params.get('w')
+        b = params.get('b')
+        self.params = {
+            'w': w,
+            'b': b
+        }
+        return self
+
     def predict(self, X):
-        w = self.best_params.get('w')
-        b = self.best_params.get('b')
+        w = self.params.get('w')
+        b = self.params.get('b')
         y_predicted = np.dot(X, w) + b
         return y_predicted
+
+    def score(self, X, y):
+        n_samples = X.shape[0]
+        y_pred = self.predict(X)
+        score = 1/n_samples * ((y - y_pred)** 2).sum()
+        return score
